@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import Analysis.Section_2_1
+import LeanCopilot
 
 /-!
 # Analysis I, Section 2.2: Addition
@@ -76,7 +77,14 @@ lemma Nat.add_succ (n m:Nat) : n + (m++) = (n + m)++ := by
 
 /-- n++ = n + 1 (Why?). Compare with Mathlib's `Nat.succ_eq_add_one` -/
 theorem Nat.succ_eq_add_one (n:Nat) : n++ = n + 1 := by
-  sorry
+  -- sorry
+  revert n; apply induction
+  . rw [zero_add, zero_succ]
+  intro n ih
+  nth_rewrite 1 [ih]
+  rw [←succ_add]
+/- pf. We prove by induction. When n = 0, we have 0++ = 1 = 0+1.
+Now suppose n++ = n + 1. Then (n++)++ = (n+1)++ = (n++) + 1. ∎ -/
 
 /-- Proposition 2.2.4 (Addition is commutative). Compare with Mathlib's `Nat.add_comm` -/
 theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
@@ -90,7 +98,16 @@ theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
 /-- Proposition 2.2.5 (Addition is associative) / Exercise 2.2.1
     Compare with Mathlib's `Nat.add_assoc`. -/
 theorem Nat.add_assoc (a b c:Nat) : (a + b) + c = a + (b + c) := by
-  sorry
+  -- sorry
+  revert c; apply induction
+  . repeat rw [add_zero]
+  intro c' ih
+  rw [add_succ, add_succ, ih, ← add_succ]
+
+/- pf. We prove by induction on c. When c = 0, we have (a+b)+0 = a+(b+0) iff a+b = a+b.
+Now suppose (a + b) + c' = a + (b + c'), and we want to show (a + b) + c'++ = a + (b + c'++).
+By the property of successor, we have (a + b) + c'++ = ((a+b)+c')++, which equals (a+(b+c'))++
+by inductive hypothesis. Now (a+(b+c'))++ = a + (b+c')++. ∎ -/
 
 /-- Proposition 2.2.6 (Cancellation law).
     Compare with Mathlib's `Nat.add_left_cancel`. -/
@@ -164,10 +181,10 @@ extracts a witness `x` and a proof `hx : P x` of the property from a hypothesis 
 #check existsUnique_of_exists_of_unique
 
 /-- Lemma 2.2.10 (unique predecessor) / Exercise 2.2.2 -/
-lemma Nat.uniq_succ_eq (a:Nat) (ha: a.IsPos) : ∃! b, b++ = a := by
+lemma Nat.uniq_succ_eq (a:Nat) (ha: a.isPos) : ∃! b, b++ = a := by
   sorry
 
-/-- Definition 2.2.11 (Ordering of the natural numbers).
+/-- Definition 2.2.11 (Ordering of the natural numbers)
     This defines the `≤` operation on the natural numbers. -/
 instance Nat.instLE : LE Nat where
   le n m := ∃ a:Nat, m = n + a
@@ -209,26 +226,71 @@ example : (8:Nat) > 5 := by
 
 /-- Compare with Mathlib's `Nat.lt_succ_self`. -/
 theorem Nat.succ_gt_self (n:Nat) : n++ > n := by
-  sorry
+  -- sorry
+  rw [gt_iff_lt,succ_eq_add_one, lt_iff]
+  constructor
+  . simp
+  intro h
+  nth_rewrite 1 [← add_zero n] at h
+  apply add_left_cancel at h
+  have : 0≠1 := by decide
+  contradiction
+
+/- pf. For any n ∈ ℕ, since n < n+1, then n < n++. ∎ -/
+
 
 /-- Proposition 2.2.12 (Basic properties of order for natural numbers) / Exercise 2.2.3
 
 (a) (Order is reflexive). Compare with Mathlib's `Nat.le_refl`.-/
 theorem Nat.ge_refl (a:Nat) : a ≥ a := by
-  sorry
+  -- sorry
+  rw [ge_iff_le]
+  constructor
+  have : a = a+0 := by rw [add_zero]
+  exact this
+
+/- pf. Note a+0 = a. Hence a ≤ a. ∎ -/
 
 /-- (b) (Order is transitive).  The `obtain` tactic will be useful here.
     Compare with Mathlib's `Nat.le_trans`. -/
 theorem Nat.ge_trans {a b c:Nat} (hab: a ≥ b) (hbc: b ≥ c) : a ≥ c := by
-  sorry
+  -- sorry
+  obtain ⟨ n, hab' ⟩ := hab   -- ∃ n ∈ ℕ st a = b+n
+  obtain ⟨ m, hbc' ⟩ := hbc   -- ∃ m ∈ ℕ st b = c+m
+  constructor                 -- We want to show ∃ x ∈ ℕ st a = c+x
+  rw [hbc'] at hab'           -- Note a = c+m+n
+  rw [add_assoc c m n] at hab'-- by associativity we know a = c+(m+n)
+  exact hab'                  -- x = m+n as requred
 
-/-- (c) (Order is anti-symmetric). Compare with Mathlib's `Nat.le_antisymm`. -/
+/-- (c) (Order is anti-symmetric). Compare with Mathlib's `Nat.le_antisymm`  -/
 theorem Nat.ge_antisymm {a b:Nat} (hab: a ≥ b) (hba: b ≥ a) : a = b := by
-  sorry
+  -- sorry
+  obtain ⟨ n, hab' ⟩ := hab           -- ∃ n ∈ ℕ st a = b+n (1)
+  obtain ⟨ m, hba' ⟩ := hba           -- ∃ m ∈ ℕ st b = a+m (2)
+  rw [hba', add_assoc] at hab'        -- Rearrange to obtain a = a+(m+n)
+  nth_rewrite 1 [← add_zero a] at hab'
+  apply add_left_cancel at hab'       -- By cancellation law 0 = m+n
+  symm at hab'
+  apply add_eq_zero at hab'           -- Then m = 0 and n = 0
+  rcases hab' with ⟨hm, hn⟩
+  rw [hm, add_zero] at hba'
+  exact hba'.symm                     -- Equation (2) becomes b = a+0 = a
+  -- disgustingly long
 
 /-- (d) (Addition preserves order).  Compare with Mathlib's `Nat.add_le_add_right`. -/
 theorem Nat.add_ge_add_right (a b c:Nat) : a ≥ b ↔ a + c ≥ b + c := by
-  sorry
+  -- sorry
+  constructor                         -- We need to prove both directions
+  . intro hab                         -- (→) Suppose a ≥ b
+    obtain ⟨ n, hab' ⟩ := hab         -- Then ∃ n ∈ ℕ st a = b+n
+    constructor                       -- Need to show ∃ m ∈ ℕ st a+c+m = b+c
+    rw [hab', add_assoc, add_comm n c, ← add_assoc]-- you get it
+  intro hc
+  obtain ⟨ m, hc' ⟩ := hc
+  rw [add_comm, add_comm b, add_assoc] at hc'
+  apply add_left_cancel at hc'
+  constructor
+  exact hc'
 
 /-- (d) (Addition preserves order).  Compare with Mathlib's `Nat.add_le_add_left`.  -/
 theorem Nat.add_ge_add_left (a b c:Nat) : a ≥ b ↔ c + a ≥ c + b := by
@@ -243,7 +305,37 @@ theorem Nat.add_le_add_left (a b c:Nat) : a ≤ b ↔ c + a ≤ c + b := add_ge_
 
 /-- (e) a < b iff a++ ≤ b.  Compare with Mathlib's `Nat.succ_le_iff`. -/
 theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
-  sorry
+  -- sorry
+  constructor
+  . intro hab
+    obtain ⟨ h1, h2 ⟩ := hab
+    obtain ⟨ n, h1 ⟩ := h1
+    have : n ≠ 0 := by
+      intro h
+      rw [h, add_zero] at h1
+      exact h2 h1.symm
+    cases n with
+    | zero => contradiction
+    | succ m =>
+      rw [← one_add, ← add_assoc, ← succ_eq_add_one] at h1
+      use m
+  intro hab'
+  obtain ⟨n, h1⟩ := hab'
+  rw [succ_eq_add_one, add_assoc, one_add] at h1
+  constructor
+  . use n++
+  by_contra
+  -- by_contra aeqb
+  -- rw [aeqb] at h1
+  -- nth_rewrite 1 [← add_zero b] at h1
+  -- apply add_left_cancel at h1
+
+
+/- pf. (→) Let a < b. Then a ≤ b and a ≠ b. Then there exists n ∈ ℕ
+such that a+n = b and n ≠ 0. Then there exists m ∈ ℕ such that m++ = n.
+So a + m++ = a + m + 1 = a++ + m = b. By definition a++ ≤ b.
+(←) Let a++ ≤ b.  -/
+
 
 /-- (f) a < b if and only if b = a + d for positive d. -/
 theorem Nat.lt_iff_add_pos (a b:Nat) : a < b ↔ ∃ d:Nat, d.IsPos ∧ b = a + d := by
