@@ -321,8 +321,7 @@ theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
   -- sorry
   constructor
   . intro hab
-    obtain ⟨ h1, h2 ⟩ := hab
-    obtain ⟨ n, h1 ⟩ := h1
+    obtain ⟨⟨n, h1⟩, h2⟩ := hab
     have : n ≠ 0 := by
       intro h
       rw [h, add_zero] at h1
@@ -343,7 +342,6 @@ theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
   apply add_left_cancel at h1
   exact Nat.succ_ne _ h1.symm
 
-
 /- pf. (→) Let a < b. Then a ≤ b and a ≠ b. Then there exists n ∈ ℕ
 such that a+n = b and n ≠ 0. Then there exists m ∈ ℕ such that m++ = n.
 So a + m++ = a + m + 1 = a++ + m = b. By definition a++ ≤ b.
@@ -354,7 +352,25 @@ Moreover, since 1+n ≠ 0, then b ≠ a. So a < b. ∎ -/
 
 /-- (f) a < b if and only if b = a + d for positive d. -/
 theorem Nat.lt_iff_add_pos (a b:Nat) : a < b ↔ ∃ d:Nat, d.IsPos ∧ b = a + d := by
-  sorry
+  -- sorry
+  constructor                         -- We prove both directions.
+  . intro hab                         -- (→) Let a < b.
+    obtain ⟨ ⟨ n, h1 ⟩, h2⟩ := hab    -- Then ∃ n ∈ ℕ st b = a+n and a ≠ b.
+    use n
+    constructor                       -- We first show n>0.
+    . intro nh                        -- Suppose, fsoc, n = 0.
+      rw [nh, add_zero] at h1         -- Then a = b.
+      exact h2 h1.symm                -- However, a≠b, which is a contradiction.
+    exact h1                          -- Note b = a+d as required.
+  intro hd                            -- (←)
+  obtain ⟨ n, ⟨ h1, h2 ⟩ ⟩ := hd      -- Let n ∈ ℕ st n>0 and b = a + n.
+  constructor                         -- To show a < b, we want to show a≤b and a≠b.
+  . use n                             -- a≤b since b = a+n.
+  intro nh                            -- Suppose a = b.
+  rw [nh] at h2
+  nth_rewrite 1 [← add_zero b] at h2
+  apply add_left_cancel at h2         -- Then 0 = n.
+  exact h1 h2.symm                    -- But n>0. Contradiciton.
 
 /-- If a < b then a ̸= b,-/
 theorem Nat.ne_of_lt (a b:Nat) : a < b → a ≠ b := by
@@ -374,7 +390,10 @@ theorem Nat.not_lt_of_gt (a b:Nat) : a < b ∧ a > b → False := by
 /-- This lemma was a `why?` statement from Proposition 2.2.13,
 but is more broadly useful, so is extracted here. -/
 theorem Nat.zero_le (a:Nat) : 0 ≤ a := by
-  sorry
+  -- sorry
+  constructor       -- WTS: ∃n: a = 0+n
+  . have : a = 0+a := by rw[zero_add]
+    exact this
 
 /-- Proposition 2.2.13 (Trichotomy of order for natural numbers) / Exercise 2.2.4
     Compare with Mathlib's `trichotomous`. -/
