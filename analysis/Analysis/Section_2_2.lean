@@ -75,7 +75,7 @@ lemma Nat.add_succ (n m:Nat) : n + (m++) = (n + m)++ := by
   rw [succ_add]
 
 
-/-- n++ = n + 1 (Why?). Compare with Mathlib's `Nat.succ_eq_add_one` -/
+/-- n++ = n + 1 (Why?). Compare with Mathlib's `Nat.succ_eq_add_one`. -/
 theorem Nat.succ_eq_add_one (n:Nat) : n++ = n + 1 := by
   -- sorry
   revert n; apply induction
@@ -86,7 +86,7 @@ theorem Nat.succ_eq_add_one (n:Nat) : n++ = n + 1 := by
 /- pf. We prove by induction. When n = 0, we have 0++ = 1 = 0+1.
 Now suppose n++ = n + 1. Then (n++)++ = (n+1)++ = (n++) + 1. ∎ -/
 
-/-- Proposition 2.2.4 (Addition is commutative). Compare with Mathlib's `Nat.add_comm` -/
+/-- Proposition 2.2.4 (Addition is commutative). Compare with Mathlib's `Nat.add_comm`. -/
 theorem Nat.add_comm (n m:Nat) : n + m = m + n := by
   -- this proof is written to follow the structure of the original text.
   revert n; apply induction
@@ -181,8 +181,21 @@ extracts a witness `x` and a proof `hx : P x` of the property from a hypothesis 
 #check existsUnique_of_exists_of_unique
 
 /-- Lemma 2.2.10 (unique predecessor) / Exercise 2.2.2 -/
-lemma Nat.uniq_succ_eq (a:Nat) (ha: a.isPos) : ∃! b, b++ = a := by
-  sorry
+lemma Nat.uniq_succ_eq (a:Nat) (ha: a.IsPos) : ∃! b, b++ = a := by
+  -- sorry
+   cases a with
+  | zero => contradiction
+  | succ a' =>
+    apply existsUnique_of_exists_of_unique
+    · use a'
+    intros x y hx hy
+    rw [←hy] at hx
+    apply succ_cancel at hx
+    exact hx
+
+/- pf. Let a ∈ ℕ. Since a>0, then a ≠ 0. Then a is the successor of a natural number.
+Let m,n ∈ ℕ where m ≠ n and m++ = a and n++ = a. Then m++ = n++. Then m = n,
+indicating the uniqueness of successors. -/
 
 /-- Definition 2.2.11 (Ordering of the natural numbers)
     This defines the `≤` operation on the natural numbers. -/
@@ -321,20 +334,22 @@ theorem Nat.lt_iff_succ_le (a b:Nat) : a < b ↔ a++ ≤ b := by
       use m
   intro hab'
   obtain ⟨n, h1⟩ := hab'
-  rw [succ_eq_add_one, add_assoc, one_add] at h1
+  rw [succ_eq_add_one, add_assoc] at h1
   constructor
-  . use n++
-  by_contra
-  -- by_contra aeqb
-  -- rw [aeqb] at h1
-  -- nth_rewrite 1 [← add_zero b] at h1
-  -- apply add_left_cancel at h1
+  . use (1+n)
+  intro h
+  rw [h] at h1
+  nth_rewrite 1 [← add_zero b] at h1
+  apply add_left_cancel at h1
+  exact Nat.succ_ne _ h1.symm
 
 
 /- pf. (→) Let a < b. Then a ≤ b and a ≠ b. Then there exists n ∈ ℕ
 such that a+n = b and n ≠ 0. Then there exists m ∈ ℕ such that m++ = n.
 So a + m++ = a + m + 1 = a++ + m = b. By definition a++ ≤ b.
-(←) Let a++ ≤ b.  -/
+(←) Let a++ ≤ b. Then there exists n ∈ ℕ such that b = a++ + n.
+Rearrange the equation to obtain b = a + (1+n). Clearly a ≤ b.
+Moreover, since 1+n ≠ 0, then b ≠ a. So a < b. ∎ -/
 
 
 /-- (f) a < b if and only if b = a + d for positive d. -/
