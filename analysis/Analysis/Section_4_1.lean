@@ -2,10 +2,7 @@ import Mathlib.Tactic
 import Mathlib.Algebra.Group.MinimalAxioms
 
 /-!
-# Analysis I, Section 4.1
-
-This file is a translation of Section 4.1 of Analysis I to Lean 4.
-All numbering refers to the original text.
+# Analysis I, Section 4.1: The integers
 
 I have attempted to make the translation as faithful a paraphrasing as possible of the original
 text. When there is a choice between a more idiomatic Lean solution and a more faithful
@@ -23,7 +20,7 @@ Main constructions and results of this section:
   natural numbers `a b:ℕ`, up to equivalence.  (This is a quotient of a scaffolding type
   `Section_4_1.PreInt`, which consists of formal differences without any equivalence imposed.)
 
-- ring operations and order these integers, as well as an embedding of ℕ
+- ring operations and order these integers, as well as an embedding of ℕ.
 
 - Equivalence with the Mathlib integers `_root_.Int` (or `ℤ`), which we will use going forward.
 
@@ -172,11 +169,11 @@ theorem Int.neg_eq (a b:ℕ) : -(a —— b) = b —— a := rfl
 
 example : -(3 —— 5) = 5 —— 3 := by rfl
 
-abbrev Int.isPos (x:Int) : Prop := ∃ (n:ℕ), n > 0 ∧ x = n
-abbrev Int.isNeg (x:Int) : Prop := ∃ (n:ℕ), n > 0 ∧ x = -n
+abbrev Int.IsPos (x:Int) : Prop := ∃ (n:ℕ), n > 0 ∧ x = n
+abbrev Int.IsNeg (x:Int) : Prop := ∃ (n:ℕ), n > 0 ∧ x = -n
 
 /-- Lemma 4.1.5 (trichotomy of integers )-/
-theorem Int.trichotomous (x:Int) : x = 0 ∨ x.isPos ∨ x.isNeg := by
+theorem Int.trichotomous (x:Int) : x = 0 ∨ x.IsPos ∨ x.IsNeg := by
   -- This proof is slightly modified from that in the original text.
   obtain ⟨ a, b, rfl ⟩ := eq_diff x
   have := _root_.trichotomous (r := LT.lt) a b
@@ -194,19 +191,19 @@ theorem Int.trichotomous (x:Int) : x = 0 ∨ x.isPos ∨ x.isNeg := by
   abel
 
 /-- Lemma 4.1.5 (trichotomy of integers)-/
-theorem Int.not_pos_zero (x:Int) : x = 0 ∧ x.isPos → False := by
+theorem Int.not_pos_zero (x:Int) : x = 0 ∧ x.IsPos → False := by
   rintro ⟨ rfl, ⟨ n, hn, hn' ⟩ ⟩
   simp [←natCast_ofNat] at hn'
   linarith
 
 /-- Lemma 4.1.5 (trichotomy of integers)-/
-theorem Int.not_neg_zero (x:Int) : x = 0 ∧ x.isNeg → False := by
+theorem Int.not_neg_zero (x:Int) : x = 0 ∧ x.IsNeg → False := by
   rintro ⟨ rfl, ⟨ n, hn, hn' ⟩ ⟩
   simp_rw [←natCast_ofNat, natCast_eq, neg_eq, eq] at hn'
   linarith
 
 /-- Lemma 4.1.5 (trichotomy of integers)-/
-theorem Int.not_pos_neg (x:Int) : x.isPos ∧ x.isNeg → False := by
+theorem Int.not_pos_neg (x:Int) : x.IsPos ∧ x.IsNeg → False := by
   rintro ⟨ ⟨ n, hn, rfl ⟩, ⟨ m, hm, hm' ⟩ ⟩
   simp_rw [natCast_eq, neg_eq, eq] at hm'
   linarith

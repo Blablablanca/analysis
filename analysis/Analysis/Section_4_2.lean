@@ -24,9 +24,12 @@ Main constructions and results of this section:
   integers `a b:ℤ`, up to equivalence.  (This is a quotient of a scaffolding type
   `Section_4_2.PreRat`, which consists of formal differences without any equivalence imposed.)
 
-- field operations and order on these rationals, as well as an embedding of ℕ and ℤ
+- Field operations and order on these rationals, as well as an embedding of ℕ and ℤ.
 
 - Equivalence with the Mathlib rationals `_root_.Rat` (or `ℚ`), which we will use going forward.
+
+Note: here (and in the sequel) we use Mathlib's natural numbers `ℕ` and integers `ℤ` rather than
+the Chapter 2 natural numbers and Section 4.1 integers.
 -/
 
 
@@ -127,11 +130,14 @@ theorem Rat.coe_Nat_eq (n:ℕ) : (n:Rat) = n // 1 := by
 theorem Rat.of_Nat_eq (n:ℕ) : (ofNat(n):Rat) = (ofNat(n):Nat) // 1 := by
   rfl
 
-lemma Rat.add_of_int (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by sorry
+/-- intCast distributes over addition -/
+lemma Rat.intCast_add (a b:ℤ) : (a:Rat) + (b:Rat) = (a+b:ℤ) := by sorry
 
-lemma Rat.mul_of_int (a b:ℤ) : (a:Rat) * (b:Rat) = (a*b:ℤ) := by sorry
+/-- intCast distributes over multiplication -/
+lemma Rat.intCast_mul (a b:ℤ) : (a:Rat) * (b:Rat) = (a*b:ℤ) := by sorry
 
-lemma Rat.neg_of_int (a:ℤ) : - (a:Rat) = (-a:ℤ) := by
+/-- intCast commutes with negation -/
+lemma Rat.intCast_neg (a:ℤ) : - (a:Rat) = (-a:ℤ) := by
   rfl
 
 theorem Rat.coe_Int_inj : Function.Injective (fun n:ℤ ↦ (n:Rat)) := by sorry
