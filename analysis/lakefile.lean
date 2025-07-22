@@ -7,17 +7,22 @@ package «Analysis» where
     ⟨`pp.unicode.fun, true⟩ -- pretty-prints `fun a ↦ b`
   ]
   -- add any additional package configuration options here
+  moreLinkArgs := #[
+    "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+    "-lctranslate2"
+  ]
 
 -- Require Mathlib (the comprehensive library of mathematics in Lean)
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.20.1"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.20.0"
 -- Needed to build book
 require subverso from git
   "https://github.com/leanprover/subverso.git" @ "main"
 require MD4Lean from git
   "https://github.com/acmepjz/md4lean" @ "main"
 
-
+require LeanCopilot from git
+  "https://github.com/lean-dojo/LeanCopilot.git" @ "v4.20.0"
 
 @[default_target]
 lean_lib «Analysis» where
