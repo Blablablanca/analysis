@@ -408,9 +408,23 @@ theorem Nat.trichotomous (a b:Nat) : a < b ∨ a = b ∨ a > b := by
   . rw [lt_iff_succ_le] at case1
     rw [Nat.le_iff_lt_or_eq] at case1
     tauto
-  . have why : a++ > b := by sorry
+  . have why : a++ > b := by -- sory
+      rw [case2]
+      exact succ_gt_self b
     tauto
-  have why : a++ > b := by sorry
+  have why : a++ > b := by -- sorry
+    obtain ⟨⟨ n, h1⟩, h2⟩ := case3
+    constructor
+    . have : a++ = b + (n+1) := by
+        rw [h1, ← add_succ, succ_eq_add_one]
+      use (n+1)
+    intro nh
+    rw [nh, succ_eq_add_one, add_assoc, one_add] at h1
+    nth_rewrite 1 [← add_zero a] at h1
+    apply add_left_cancel at h1
+    symm at h1
+    apply succ_ne n at h1
+    exact h1
   tauto
 
 /--
