@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import Analysis.Section_2_2
+import LeanCopilot
 
 /-!
 # Analysis I, Section 2.3: Multiplication
@@ -27,6 +28,7 @@ namespace Chapter2
 
 /-- Definition 2.3.1 (Multiplication of natural numbers) -/
 abbrev Nat.mul (n m : Nat) : Nat := Nat.recurse (fun _ prod ↦ prod + m) 0 n
+-- 0 (+m) for n times
 
 /-- This instance allows for the `*` notation to be used for natural number multiplication. -/
 instance Nat.instMul : Mul Nat where
@@ -49,15 +51,29 @@ theorem Nat.two_mul (m: Nat) : 2 * m = 0 + m + m := by
 
 /-- This lemma will be useful to prove Lemma 2.3.2. -/
 lemma Nat.mul_zero (n: Nat) : n * 0 = 0 := by
-  sorry
+  -- sorry
+  revert n; apply induction
+  . rw [zero_mul]
+  intro m ih
+  rw [succ_mul, ih, add_zero]
 
 /-- This lemma will be useful to prove Lemma 2.3.2. -/
 lemma Nat.mul_succ (n m:Nat) : n * m++ = n * m + n := by
-  sorry
+  -- sorry
+  revert n; apply induction
+  . rw [zero_mul, zero_mul, add_zero]
+  intro a ih
+  rw [succ_mul, ih, succ_mul, add_assoc, add_assoc, add_succ, add_succ m a]
+  nth_rewrite 2 [add_comm]
+  rfl
 
 /-- Lemma 2.3.2 (Multiplication is commutative) / Exercise 2.3.1 -/
 lemma Nat.mul_comm (n m: Nat) : n * m = m * n := by
-  sorry
+  -- sorry
+  revert n; apply induction
+  . rw [zero_mul, mul_zero]
+  intro n ih
+  rw [succ_mul, mul_succ, ih]
 
 theorem Nat.mul_one (m: Nat) : m * 1 = m := by
   rw [mul_comm, one_mul]
