@@ -181,9 +181,27 @@ lemma Nat.mul_cancel_right {a b c: Nat} (h: a * c = b * c) (hc: c.IsPos) : a = b
 
 /-- (Not from textbook) Nat is an ordered semiring. -/
 instance Nat.isOrderedRing : IsOrderedRing Nat where
-  zero_le_one := by sorry
-  mul_le_mul_of_nonneg_left := by sorry
-  mul_le_mul_of_nonneg_right := by sorry
+  zero_le_one := by decide -- sorry
+  mul_le_mul_of_nonneg_left := by
+    intro a b c hab hc
+    obtain ⟨ x, h ⟩ := hab
+    rw [h, mul_add]
+    nth_rewrite 1 [← Nat.add_zero (c * a)]
+    set k := c*a with hk
+    rw [← add_le_add_left]
+    set k' := c*x
+    apply zero_le k'
+    -- sorry
+  mul_le_mul_of_nonneg_right := by
+    intro a b c hab hc
+    obtain ⟨ x, h ⟩ := hab
+    rw [h, add_mul]
+    nth_rewrite 1 [← Nat.add_zero (a * c)]
+    set k := c*a with hk
+    rw [← add_le_add_left]
+    set k' := x*c
+    apply zero_le k'
+    -- sorry
 
 example (a b c d:Nat) (hab: a ≤ b) : c*a*d ≤ c*b*d := by
   gcongr
