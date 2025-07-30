@@ -1,6 +1,6 @@
 import Mathlib.Tactic
 import Analysis.Section_2_1
-import LeanCopilot
+-- import LeanCopilot
 
 /-!
 # Analysis I, Section 2.2: Addition
@@ -479,9 +479,29 @@ such as `order` to be applicable to the Chapter 2 natural numbers. -/
 instance Nat.linearOrder : LinearOrder Nat where
   le_refl := ge_refl
   le_trans a b c hab hbc := ge_trans hbc hab
-  lt_iff_le_not_le := sorry
+  lt_iff_le_not_le := by -- sorry
+    intro a b
+    constructor
+    . intro h
+      constructor
+      . exact le_of_lt h
+      intro nh
+      have h1 : a≠b := ne_of_lt a b h
+      have h2 : b<a := ⟨nh, h1.symm⟩
+      exact not_lt_of_gt a b ⟨h, h2⟩
+    intro ⟨ h1, h2 ⟩
+    constructor
+    · exact h1
+    intro heq
+    rw [heq] at h1
+    rw [heq] at h2
+    exact h2 h1
   le_antisymm a b hab hba := ge_antisymm hba hab
-  le_total := sorry
+  le_total := by -- sorry
+    intro a b
+    by_cases h : a ≤ b
+    . exact Or.inl h
+    sorry
   toDecidableLE := decidableRel
 
 /-- This illustration of the `order` tactic is not from the
@@ -509,7 +529,33 @@ example (a b c d e:Nat) (hab: a ≤ b) (hbc: b < c) (hde: d < e) :
 theorem Nat.strong_induction {m₀:Nat} {P: Nat → Prop}
   (hind: ∀ m, m ≥ m₀ → (∀ m', m₀ ≤ m' ∧ m' < m → P m') → P m) :
     ∀ m, m ≥ m₀ → P m := by
+  -- sorry
+  apply induction
+  . intro base
+    apply hind
+    . exact base
+    intro m' hand
+    cases hand.right with
+    | intro h1 h2 =>
+    have heq : m' = 0 := by
+      have : m' ≥ 0 := by
+        rw [ge_iff_le]
+        exact zero_le m'
+      rw [← ge_iff_le] at h1
+      apply ge_antisymm this h1
+    contradiction
+  intro n h1 hle
+  apply hind
+  . exact hle
+  intro m' hand
   sorry
+
+  -- intro n h1 h2
+  -- have h3 : m₀ ≤ n ∧ n < n++ → P n := by
+  --   intro h
+  --   exact h1 h.left
+  -- apply hind n++ h2 h3
+
 
 /-- Exercise 2.2.6 (backwards induction)
     Compare with Mathlib's `Nat.decreasingInduction`. -/

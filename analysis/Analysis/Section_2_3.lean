@@ -1,6 +1,6 @@
 import Mathlib.Tactic
 import Analysis.Section_2_2
-import LeanCopilot
+-- import LeanCopilot
 
 /-!
 # Analysis I, Section 2.3: Multiplication
@@ -211,7 +211,21 @@ example (a b c d:Nat) (hab: a ≤ b) : c*a*d ≤ c*b*d := by
 /-- Proposition 2.3.9 (Euclid's division lemma) / Exercise 2.3.5 -/
 theorem Nat.exists_div_mod (n:Nat) {q: Nat} (hq: q.IsPos) :
     ∃ m r: Nat, 0 ≤ r ∧ r < q ∧ n = m * q + r := by
-  sorry
+    -- induction n with
+    -- | zero =>
+    --   exists 0,0
+    --   constructor
+    --   . decide
+    --   constructor
+    --   . have : 0 ≤ q := zero_le q
+    --     constructor
+    --     . exact this
+    --     rw [isPos_iff] at hq
+    --     exact hq.symm
+    --   have : zero = 0 := rfl
+    --   rw [this, zero_mul, add_zero]
+    -- | succ n ih =>
+      sorry
 
 /-- Definition 2.3.11 (Exponentiation for natural numbers) -/
 abbrev Nat.pow (m n: Nat) : Nat := Nat.recurse (fun _ prod ↦ prod * m) 1 n
