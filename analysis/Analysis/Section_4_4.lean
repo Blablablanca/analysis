@@ -32,8 +32,7 @@ theorem Rat.exists_between_rat {x y:ℚ} (h: x < y) : ∃ z:ℚ, x < z ∧ z < y
   use (x+y)/2
   have h' : x/2 < y/2 := by
     rw [show x/2 = x*(1/2) by ring, show y/2 = y*(1/2) by ring]
-    apply mul_lt_mul_of_pos_right h
-    positivity
+    apply mul_lt_mul_of_pos_right h; positivity
   constructor
   . replace h' := add_lt_add_right h' (x/2)
     convert h' using 1 <;> ring
@@ -67,31 +66,24 @@ theorem Rat.not_exist_sqrt_two : ¬ ∃ x:ℚ, x^2 = 2 := by
   wlog hpos : x > 0
   . have hneg : -x > 0 := by
       contrapose! hpos; contrapose! hnon; linarith
-    specialize this (-x) (by simp [hx]) (by simp [hnon]) hneg
-    assumption
+    exact this (-x) (by simp [hx]) (by simp [hnon]) hneg
   have hrep : ∃ p q:ℕ, p > 0 ∧ q > 0 ∧ p^2 = 2*q^2 := by
     use x.num.toNat, x.den
-    have hnum_pos : x.num > 0 := num_pos.mpr hpos
-    have hden_pos : x.den > 0 := den_pos x
+    observe hnum_pos : x.num > 0
+    observe hden_pos : x.den > 0
     refine ⟨ by simp [hpos], hden_pos, ?_ ⟩
-    rw [←num_div_den x] at hx
-    field_simp at hx
+    rw [←num_div_den x] at hx; field_simp at hx
     have hnum_cast : x.num = x.num.toNat := Int.eq_natCast_toNat.mpr (by positivity)
-    rw [hnum_cast] at hx
-    norm_cast at hx
+    rw [hnum_cast] at hx; norm_cast at hx
   set P : ℕ → Prop := fun p ↦ p > 0 ∧ ∃ q > 0, p^2 = 2*q^2
-  have hP : ∃ p, P p := by
-    obtain ⟨ p, q, hp, hq, hpq ⟩ := hrep
-    use p
-    exact ⟨ hp, q, hq, hpq ⟩
+  have hP : ∃ p, P p := by aesop
   have hiter (p:ℕ) (hPp: P p) : ∃ q, q < p ∧ P q := by
     rcases p.even_or_odd'' with hp | hp
     . rw [even_iff_exists_two_mul] at hp
       obtain ⟨ k, rfl ⟩ := hp
       obtain ⟨ q, hpos, hq ⟩ := hPp.2
       have : q^2 = 2 * k^2 := by linarith
-      use q
-      constructor
+      use q; constructor
       . sorry
       exact ⟨ hpos, k, by linarith [hPp.1], this ⟩
     have h1 : Odd (p^2) := by
@@ -100,13 +92,12 @@ theorem Rat.not_exist_sqrt_two : ¬ ∃ x:ℚ, x^2 = 2 := by
       obtain ⟨ q, hpos, hq ⟩ := hPp.2
       rw [even_iff_exists_two_mul]
       use q^2
-    have h3 := Nat.not_even_and_odd (p^2)
+    observe : ¬(Even (p ^ 2) ∧ Odd (p ^ 2))
     tauto
   classical
   set f : ℕ → ℕ := fun p ↦ if hPp: P p then (hiter p hPp).choose else 0
   have hf (p:ℕ) (hPp: P p) : (f p < p) ∧ P (f p) := by
-    simp [f, hPp]
-    exact (hiter p hPp).choose_spec
+    simp [f, hPp]; exact (hiter p hPp).choose_spec
   obtain ⟨ p, hP ⟩ := hP
   set a : ℕ → ℕ := Nat.rec p (fun n p ↦ f p)
   have ha (n:ℕ) : P (a n) := by
@@ -124,21 +115,18 @@ theorem Rat.exist_approx_sqrt_two {ε:ℚ} (hε:ε>0) : ∃ x ≥ (0:ℚ), x^2 <
   -- This proof is written to follow the structure of the original text.
   by_contra! h
   have (n:ℕ): (n*ε)^2 < 2 := by
-    induction' n with n hn
-    . simp
-    specialize h (n*ε) (by positivity) hn
+    induction' n with n hn; simp
     simp [add_mul]
-    apply lt_of_le_of_ne h
+    apply lt_of_le_of_ne (h (n*ε) (by positivity) hn)
     have := not_exist_sqrt_two
     simp at this ⊢; exact this _
   obtain ⟨ n, hn ⟩ := Nat.exists_gt (2/ε)
   rw [gt_iff_lt, div_lt_iff₀' (by positivity), mul_comm,
       ←sq_lt_sq₀ (by norm_num) (by positivity)] at hn
-  specialize this n; linarith
+  linarith [this n]
 
 /-- Example 4.4.6 -/
 example :
   let ε:ℚ := 1/1000
   let x:ℚ := 1414/1000
-  x^2 < 2 ∧ 2 < (x+ε)^2 := by
-  norm_num
+  x^2 < 2 ∧ 2 < (x+ε)^2 := by norm_num
