@@ -27,7 +27,7 @@ open Chapter9 Chapter10 BoundedInterval
 
 /-- Theorem 11.9.1 (First Fundamental Theorem of Calculus)-/
 theorem cts_of_integ {a b:ℝ} {f:ℝ → ℝ} (hf: IntegrableOn f (Icc a b)) :
-  ContinuousOn (fun x => integ f (Icc a x)) (Set.Icc a b) := by
+  ContinuousOn (fun x => integ f (Icc a x)) (.Icc a b) := by
   -- This proof is written to follow the structure of the original text.
   set F : ℝ → ℝ := fun x => integ f (Icc a x)
   obtain ⟨ M, hM ⟩ := hf.1
@@ -41,16 +41,14 @@ theorem cts_of_integ {a b:ℝ} {f:ℝ → ℝ} (hf: IntegrableOn f (Icc a b)) :
       . simp [integ_of_const, le_of_lt hxy]
       intro z hz
       specialize hM z ?_
-      . simp at hz ⊢
-        exact ⟨ by linarith, by linarith ⟩
+      . simp at hz ⊢; constructor <;> linarith
       rw [abs_le'] at hM; simp [hM]
     rw [neg_le]
     convert integ_mono (f := fun _ ↦ -M) (integ_of_const _ _).1 this.1 _
     . simp [integ_of_const, le_of_lt hxy]
     intro z hz
     specialize hM z ?_
-    . simp at hz ⊢
-      exact ⟨ by linarith, by linarith ⟩
+    . simp at hz ⊢; constructor <;> linarith
     rw [abs_le'] at hM; simp; linarith
   replace {x y:ℝ} (hx: x ∈ Set.Icc a b) (hy: y ∈ Set.Icc a b) :
     |F y - F x| ≤ M * |x-y| := by
@@ -58,7 +56,7 @@ theorem cts_of_integ {a b:ℝ} {f:ℝ → ℝ} (hf: IntegrableOn f (Icc a b)) :
     . simp [abs_of_neg (show x-y < 0 by linarith), this h hx hy]
     . simp [h]
     . simp [abs_of_pos (show 0 < x-y by linarith), abs_sub_comm, this h hy hx]
-  replace : UniformContinuousOn F (Set.Icc a b) := by
+  replace : UniformContinuousOn F (.Icc a b) := by
     simp [Metric.uniformContinuousOn_iff, Real.dist_eq, -Set.mem_Icc]
     intro ε hε
     use (ε/(max M 1)), (by positivity)
@@ -73,7 +71,7 @@ theorem cts_of_integ {a b:ℝ} {f:ℝ → ℝ} (hf: IntegrableOn f (Icc a b)) :
 
 theorem deriv_of_integ {a b:ℝ} (hab: a < b) {f:ℝ → ℝ} (hf: IntegrableOn f (Icc a b))
   {x₀:ℝ} (hx₀ : x₀ ∈ Set.Icc a b) (hcts: ContinuousWithinAt f (Icc a b) x₀) :
-  HasDerivWithinAt (fun x => integ f (Icc a x)) (f x₀) (Set.Icc a b) x₀ := by
+  HasDerivWithinAt (fun x => integ f (Icc a x)) (f x₀) (.Icc a b) x₀ := by
   -- This proof is written to follow the structure of the original text.
   rw [HasDerivWithinAt.iff_approx_linear]
   intro ε hε
@@ -112,19 +110,19 @@ theorem IntegrableOn.of_f_9_8_5 : IntegrableOn f_9_8_5 (Icc 0 1) := by
 
 noncomputable abbrev F_11_9_2 := fun x ↦ integ f_9_8_5 (Icc 0 x)
 
-theorem ContinuousOn.of_F_11_9_2 : ContinuousOn F_11_9_2 (Set.Icc 0 1) := by
+theorem ContinuousOn.of_F_11_9_2 : ContinuousOn F_11_9_2 (.Icc 0 1) := by
   apply cts_of_integ
   exact IntegrableOn.of_f_9_8_5
 
 theorem DifferentiableOn.of_F_11_9_2 {x:ℝ} (hx: ¬ ∃ r:ℚ, x = r) (hx': x ∈ Set.Icc 0 1) :
-  DifferentiableWithinAt ℝ F_11_9_2 (Set.Icc 0 1) x := by
+  DifferentiableWithinAt ℝ F_11_9_2 (.Icc 0 1) x := by
   have := deriv_of_integ (show 0 < 1 by norm_num) IntegrableOn.of_f_9_8_5 hx'
      (ContinuousAt.continuousWithinAt (ContinuousAt.of_f_9_8_5 hx))
   rw [hasDerivWithinAt_iff_hasFDerivWithinAt] at this
   use (ContinuousLinearMap.smulRight (1:ℝ →L[ℝ] ℝ) (f_9_8_5 x))
 
 /-- Exercise 11.9.1 -/
-theorem DifferentiableOn.of_F_11_9_2' {q:ℚ} (hq: (q:ℝ) ∈ Set.Icc 0 1) : ¬ DifferentiableWithinAt ℝ F_11_9_2 (Set.Icc 0 1) q := by sorry
+theorem DifferentiableOn.of_F_11_9_2' {q:ℚ} (hq: (q:ℝ) ∈ Set.Icc 0 1) : ¬ DifferentiableWithinAt ℝ F_11_9_2 (.Icc 0 1) q := by sorry
 
 /-- Definition 11.9.3.  We drop the requirement that x be a limit point as this makes
     the Lean arguments slightly cleaner -/
@@ -145,7 +143,7 @@ theorem integ_eq_antideriv_sub {a b:ℝ} (h:a ≤ b) {f F: ℝ → ℝ}
 
   -- This proof is written to follow the structure of the original text.
   rcases lt_or_eq_of_le h with h | h
-  . have hF_cts : ContinuousOn F (Set.Icc a b) := by
+  . have hF_cts : ContinuousOn F (.Icc a b) := by
       intro x hx
       exact ContinuousWithinAt.of_differentiableWithinAt (hF.1 x hx)
     -- for technical reasons we need to extend F by constant outside of Icc a b
@@ -199,7 +197,7 @@ theorem integ_eq_antideriv_sub {a b:ℝ} (h:a ≤ b) {f F: ℝ → ℝ}
           rw [α_length_of_cts (by linarith) (le_of_lt hJab) (by linarith) hJ'' hF'_cts]
           have := HasDerivWithinAt.mean_value hJab (ContinuousOn.mono hF'_cts ?_) ?_
           . obtain ⟨ e, he, hmean ⟩ := this
-            have : HasDerivWithinAt F' (f e) (Set.Ioo c d) e := by
+            have : HasDerivWithinAt F' (f e) (.Ioo c d) e := by
               replace hJ := (Ioo_subset J).trans hJ
               simp [subset_iff] at hJ
               apply HasDerivWithinAt.congr (f := F)
@@ -230,16 +228,12 @@ theorem integ_eq_antideriv_sub {a b:ℝ} (h:a ≤ b) {f F: ℝ → ℝ}
                   simp; use e; simp
                   exact ((subset_iff _ _).mp (Ioo_subset J)) he
             rw [←mem_closure_iff_clusterPt]
-            apply closure_mono (s := Set.Ioo e d)
-            . intro x hx; simp at he hx ⊢
-              exact ⟨ ⟨ by linarith, by linarith ⟩, by linarith ⟩
-            simp at he
-            rw [closure_Ioo (by linarith)]
-            simp; linarith
-          . simp; rw [Set.Icc_subset_Ioo_iff (le_of_lt hJab)]
-            exact ⟨ by linarith, by linarith ⟩
+            apply closure_mono (s := .Ioo e d)
+            . intro x hx; simp at he hx ⊢; refine ⟨ ⟨ ?_, ?_ ⟩, ?_ ⟩ <;> linarith
+            simp at he; rw [closure_Ioo (by linarith)]; simp; linarith
+          . simp; rw [Set.Icc_subset_Ioo_iff (le_of_lt hJab)]; constructor <;> linarith
           apply DifferentiableOn.congr (f := F)
-          . apply DifferentiableOn.mono hF.1
+          . apply hF.1.mono
             replace hJ := (Ioo_subset J).trans hJ
             simpa [subset_iff] using hJ
           intro x hx
@@ -251,7 +245,7 @@ theorem integ_eq_antideriv_sub {a b:ℝ} (h:a ≤ b) {f F: ℝ → ℝ}
         _ = F' b - F' a := by
           apply α_length_of_cts (by linarith) _ (by linarith) _ hF'_cts
           . simp [le_of_lt h]
-          intro x hx; simp [mem_iff] at hx ⊢; exact ⟨ by linarith, by linarith ⟩
+          intro x hx; simp [mem_iff] at hx ⊢; constructor <;> linarith
         _ = _ := by
           congr 1 <;> apply hFF' <;> simp [le_of_lt h]
     have hlower (P: Partition (Icc a b)) : lower_riemann_sum f P ≤ F b - F a := by
@@ -259,13 +253,12 @@ theorem integ_eq_antideriv_sub {a b:ℝ} (h:a ≤ b) {f F: ℝ → ℝ}
     replace hupper : upper_integral f (Icc a b) ≥ F b - F a := by
       rw [upper_integ_eq_inf_upper_sum hf.1]
       apply le_csInf <;> simp [Set.range_nonempty]
-      intro P; specialize hupper P; linarith
+      intro P; linarith [hupper P]
     replace hlower : lower_integral f (Icc a b) ≤ F b - F a := by
       rw [lower_integ_eq_sup_lower_sum hf.1]
       apply csSup_le <;> simp [Set.range_nonempty]
-      intro P; specialize hlower P; linarith
-    replace hf := hf.2
-    linarith
+      intro P; linarith [hlower P]
+    linarith [hf.2]
   simp [h]
   apply (integ_on_subsingleton _).2
   simp [length]
@@ -276,7 +269,7 @@ noncomputable abbrev F_11_9 : ℝ → ℝ := fun x ↦ if x = 0 then 0 else x^2 
 
 example : Differentiable ℝ F_11_9 := by sorry
 
-example : ¬ BddOn (deriv F_11_9) (Set.Icc (-1) 1) := by sorry
+example : ¬ BddOn (deriv F_11_9) (.Icc (-1) 1) := by sorry
 
 example : AntiderivOn F_11_9 (deriv F_11_9) (Icc (-1) 1) := by sorry
 

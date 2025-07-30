@@ -197,8 +197,8 @@ lemma Nat.uniq_succ_eq (a:Nat) (ha: a.IsPos) : ∃! b, b++ = a := by
 Let m,n ∈ ℕ where m ≠ n and m++ = a and n++ = a. Then m++ = n++. Then m = n,
 indicating the uniqueness of successors. -/
 
-/-- Definition 2.2.11 (Ordering of the natural numbers)
-    This defines the `≤` operation on the natural numbers. -/
+/-- Definition 2.2.11 (Ordering of the natural numbers).
+    This defines the `≤` notation on the natural numbers. -/
 instance Nat.instLE : LE Nat where
   le n m := ∃ a:Nat, m = n + a
 
@@ -387,6 +387,19 @@ theorem Nat.not_lt_of_gt (a b:Nat) : a < b ∧ a > b → False := by
   have := ne_of_lt _ _ h.1
   contradiction
 
+theorem Nat.not_lt_self {a: Nat} (h : a < a) : False := by
+  apply not_lt_of_gt a a
+  simp [h]
+
+theorem Nat.lt_of_le_of_lt {a b c : Nat} (hab: a ≤ b) (hbc: b < c) : a < c := by
+  rw [lt_iff_add_pos] at *
+  rcases hab with ⟨d, hd⟩
+  rcases hbc with ⟨e, he1, he2⟩
+  use d + e
+  constructor
+  . exact add_pos_right d he1
+  . rw [he2, hd, add_assoc]
+
 /-- This lemma was a `why?` statement from Proposition 2.2.13,
 but is more broadly useful, so is extracted here. -/
 theorem Nat.zero_le (a:Nat) : 0 ≤ a := by
@@ -473,41 +486,69 @@ def Nat.decLe : (a b : Nat) → Decidable (a ≤ b)
 
 instance Nat.decidableRel : DecidableRel (· ≤ · : Nat → Nat → Prop) := Nat.decLe
 
-
 /-- (Not from textbook) Nat has the structure of a linear ordering. This allows for tactics
-such as `order` to be applicable to the Chapter 2 natural numbers. -/
-instance Nat.linearOrder : LinearOrder Nat where
+such as `order` and `calc` to be applicable to the Chapter 2 natural numbers. -/
+instance Nat.instLinearOrder : LinearOrder Nat where
   le_refl := ge_refl
   le_trans a b c hab hbc := ge_trans hbc hab
-  lt_iff_le_not_le := by -- sorry
+  -- lt_iff_le_not_le := by -- sorry
+  --   intro a b
+  --   constructor
+  --   . intro h
+  --     constructor
+  --     . exact le_of_lt h
+  --     intro nh
+  --     have h1 : a≠b := ne_of_lt a b h
+  --     have h2 : b < a := ⟨nh, h1.symm⟩
+  --     exact not_lt_of_gt a b ⟨h, h2⟩
+  --   intro ⟨ h1, h2 ⟩
+  --   constructor
+  --   · exact h1
+  --   intro heq
+  --   rw [heq] at h1
+  --   rw [heq] at h2
+  --   exact h2 h1
+
+  lt_iff_le_not_le := by
     intro a b
     constructor
-    . intro h
-      constructor
-      . exact le_of_lt h
-      intro nh
-      have h1 : a≠b := ne_of_lt a b h
-      have h2 : b<a := ⟨nh, h1.symm⟩
-      exact not_lt_of_gt a b ⟨h, h2⟩
-    intro ⟨ h1, h2 ⟩
+    intro h
     constructor
-    · exact h1
-    intro heq
-    rw [heq] at h1
-    rw [heq] at h2
-    exact h2 h1
+    . exact le_of_lt h
+    . by_contra h'
+      exact not_lt_self (lt_of_le_of_lt h' h)
+
+    rintro ⟨ h1, h2 ⟩
+    rw [lt_iff, ← le_iff]
+    constructor
+    exact h1
+    by_contra h
+    rw [h] at h2
+    apply h2
+    exact ge_refl b
   le_antisymm a b hab hba := ge_antisymm hba hab
-  le_total := by -- sorry
+  le_total := by
     intro a b
-    by_cases h : a ≤ b
-    . exact Or.inl h
-    sorry
+    obtain h | h | h := trichotomous a b
+    . left; exact le_of_lt h
+    . simp [h, ge_refl]
+    . right; exact le_of_lt h
   toDecidableLE := decidableRel
 
 /-- This illustration of the `order` tactic is not from the
     textbook. -/
 example (a b c d:Nat) (hab: a ≤ b) (hbc: b ≤ c) (hcd: c ≤ d)
         (hda: d ≤ a) : a = c := by order
+
+/-- An illustration of the `calc` tactic with `≤/<`. -/
+example (a b c d e:Nat) (hab: a ≤ b) (hbc: b < c) (hcd: c ≤ d)
+        (hde: d ≤ e) : a + 0 < e := by
+  calc
+    a + 0 = a := by simp
+        _ ≤ b := hab
+        _ < c := hbc
+        _ ≤ d := hcd
+        _ ≤ e := hde
 
 /-- (Not from textbook) Nat has the structure of an ordered monoid. This allows for tactics
 such as `gcongr` to be applicable to the Chapter 2 natural numbers. -/
@@ -519,7 +560,7 @@ instance Nat.isOrderedAddMonoid : IsOrderedAddMonoid Nat where
 /-- This illustration of the `gcongr` tactic is not from the
     textbook. -/
 example (a b c d e:Nat) (hab: a ≤ b) (hbc: b < c) (hde: d < e) :
-  a+d ≤ c + e := by
+  a + d ≤ c + e := by
   gcongr
   order
 
